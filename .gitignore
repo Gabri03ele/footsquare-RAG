@@ -1,0 +1,23 @@
+# Data downloaded at runtime
+data/
+
+# Hugging Face model weights
+models_cache/
+
+# Pipeline outputs (predictions CSV)
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
