@@ -1,13 +1,12 @@
-# Run the full pipeline from the command line.
+"""Run the full pipeline from the command line.
 
-# Usage, from the repository root:
-#     python -m src.run
-#     python -m src.run --n 7 --skip-judge
-
+Usage, from the repository root:
+    python -m src.run
+    python -m src.run --method permute --skip-judge
+"""
 
 import argparse
 from pathlib import Path
-
 from src.data import download_data, load_questions, load_rules
 from src.export import prediction_distribution, write_predictions
 from src.generate import answer_question, load_generator
@@ -22,9 +21,14 @@ def parse_args():
     parser.add_argument("--cache-dir", type=Path, default=ROOT / "models_cache")
     parser.add_argument("--out", type=Path, default=ROOT / "outputs" / "exercise_predictions.csv")
     parser.add_argument("--n", type=int, default=7, help="number of chunks to retrieve")
+    parser.add_argument(
+        "--method",
+        default="hybrid",
+        choices=["generate", "logits", "permute", "hybrid"],
+        help="how the answer letter is chosen (see src/generate.py)",
+    )
     parser.add_argument("--skip-judge", action="store_true", help="do not run the LLM judge")
     return parser.parse_args()
-
 
 def main():
     args = parse_args()
@@ -42,7 +46,9 @@ def main():
     tokenizer, model = load_generator(args.cache_dir)
     results = []
     for q in questions:
-        result = answer_question(q, kb_chunks, embedder, tokenizer, model, n=args.n)
+        result = answer_question(
+            q, kb_chunks, embedder, tokenizer, model, n=args.n, method=args.method
+        )
         results.append(result)
         print(f"{result['id']}: {result['answer']}")
 
@@ -56,7 +62,6 @@ def main():
         print(f"Grounding rate:           {scores['grounding_rate']:.1%}")
         print(f"Context reliability rate: {scores['reliability_rate']:.1%}")
         print(f"Both good:                {scores['both_good_rate']:.1%}")
-
 
 if __name__ == "__main__":
     main()
